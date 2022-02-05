@@ -1,0 +1,34 @@
+{
+    "name": "clembet/omnipay-pagseguro",
+    "description": "PagSeguro driver for Omnipay 3.0",
+    "type": "library",
+    "keywords": [
+        "gateway",
+        "pagseguro",
+        "omnipay",
+        "payment"
+    ],
+    "homepage": "https://github.com/clembet/omnipay-pagseguro",
+    "require": {
+        "php": ">=7.0",
+        "omnipay/common": "^3.0",
+	"pagseguro/pagseguro-php-sdk": "^6.0"
+    },
+    "require-dev": {
+        "omnipay/tests": "~3.0"
+    },
+    "license": "MIT",
+    "authors": [
+	{
+		"name": "Keite Clembet",
+		"email": "clembet@gmail.com"
+	}
+    ],
+    "autoload": {
+        "psr-4": {
+            "Omnipay\\PagSeguro\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
