@@ -88,6 +88,12 @@ class Gateway extends AbstractGateway
         return $this->setParameter('pubKey', $value);
     }
 
+    public function parseResponse($data)
+    {
+        $request = $this->createRequest('\Omnipay\PagSeguro\Message\PurchaseRequest', []);
+        return new \Omnipay\PagSeguro\Message\Response($request, (array)$data);
+    }
+
     /**
      * Authorize Request
      *

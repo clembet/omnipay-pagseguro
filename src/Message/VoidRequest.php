@@ -29,25 +29,9 @@ class VoidRequest extends AbstractRequest   // /cancels é utilizado em pagament
     {
         $this->validate('amount');
         //$data = parent::getData();
-        $data['amount']['value'] = $this->getAmount();
+        $data['amount']['value'] = $this->getAmountInteger();
 
         return $data;
-    }
-
-    public function getAmount()
-    {
-        $value = parent::getAmount();
-        return (int)($value*100.0);
-    }
-
-    public function getTransactionID()
-    {
-        return $this->getParameter('transactionId');
-    }
-
-    public function setTransactionID($value)
-    {
-        return $this->setParameter('transactionId', $value);
     }
 
     public function sendData($data)

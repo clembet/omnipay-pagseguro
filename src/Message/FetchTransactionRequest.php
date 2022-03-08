@@ -18,16 +18,6 @@ class FetchTransactionRequest extends AbstractRequest
         return parent::getData();
     }
 
-    public function getTransactionID()
-    {
-        return $this->getParameter('transactionId');
-    }
-
-    public function setTransactionID($value)
-    {
-        return $this->setParameter('transactionId', $value);
-    }
-
     public function sendData($data)
     {
         $this->validate('transactionId');
