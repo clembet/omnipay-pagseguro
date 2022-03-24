@@ -34,6 +34,8 @@ class VoidRequest extends AbstractRequest   // /cancels é utilizado em pagament
         return $data;
     }
 
+    //TODO: prece que o PIX tem um endpoint diferente: https://dev.pagseguro.uol.com.br/reference/pix-refund-charge
+    //https://documenter.getpostman.com/view/10863174/TVetc6HV#b1b25c1c-f4f0-41d7-9413-7ed67ba64582
     public function sendData($data)
     {
         $this->validate('transactionId');

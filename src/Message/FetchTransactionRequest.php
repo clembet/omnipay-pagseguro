@@ -18,6 +18,8 @@ class FetchTransactionRequest extends AbstractRequest
         return parent::getData();
     }
 
+    //TODO: parece que o endpoint de pix é diferente: https://dev.pagseguro.uol.com.br/reference/pix-get-payments
+    // TODO: https://dev.pagseguro.uol.com.br/reference/pix-get-charge
     public function sendData($data)
     {
         $this->validate('transactionId');

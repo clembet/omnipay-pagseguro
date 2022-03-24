@@ -17,37 +17,35 @@ class AuthorizeRequest extends AbstractRequest
 
     public function getData()
     {
-        $this->validate('currency', 'order_id');
-        $card = $this->getCard();
+        $this->validate('customer', 'paymentType');
+        $data = [];
+        switch(strtolower($this->getPaymentType()))
+        {
+            case 'creditcard':
+                $data = $this->getDataCreditCard();
+                $data["payment_method"]["capture"] = false; // quando capture=false só faz a análise de limite sem aprovação da transação
+                break;
 
-        $data = [
-            "reference_id"=> $this->getOrderId(),
-            "description"=> "Compra em ".$this->getSoftDescriptor(),
-            "amount"=> [
-                "value"=> $this->getAmountInteger(),
-                "currency"=> $this->getCurrency()
-            ],
-            "payment_method"=> [
-                "type"=> "CREDIT_CARD",
-                "installments"=> $this->getInstallments(),
-                "capture"=> false, // quando capture=false só faz a análise de limite sem aprovação da transação
-                "soft_descriptor"=> $this->getSoftDescriptor(),
-                "card"=> [
-                    "number"=> $card->getNumber(),
-                    "exp_month"=> str_pad($card->getExpiryMonth(), 2, 0, STR_PAD_LEFT),
-                    "exp_year"=> $card->getExpiryYear(),
-                    "security_code"=> $card->getCvv(),
-                    "holder"=> [
-                        "name"=> $card->getName()
-                    ]
-                ]
-            ],
-            "notification_urls" => [
-                $this->getNotifyUrl()
-            ]
-        ];
+            case 'boleto':
+                $data = $this->getDataBoleto();
+                break;
+
+            case 'pix':
+                $data = $this->getDataPix();
+
+                //TODO: validar
+                //https://secure.sandbox.api.pagseguro.com/instant-payments/cob/{txid} => order_id
+                $this->liveEndpoint = 'https://secure.api.pagseguro.com/instant-payments';
+                $this->testEndpoint = 'https://secure.sandbox.api.pagseguro.com/instant-payments';
+                $this->requestMethod = 'PUT'; //https://dev.pagseguro.uol.com.br/reference/pix-charge
+                $this->resource = 'cob';
+                $this->version = '2.1.0';
+                break;
+
+            default:
+                $data = $this->getDataCreditCard();
+        }
 
         return $data;
     }
-
 }

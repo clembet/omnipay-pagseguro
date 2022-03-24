@@ -201,92 +201,14 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         $this->setParameter('paymentType', $value);
     }
 
-    protected function getCustomerData()
+    public function getChavePix()
     {
-        $card = $this->getCard();
-        return ["name"=> $card->getName(),
-            "email"=> $card->getEmail(),
-            "tax_id"=> $card->getHolderDocumentNumber(),
-            "phones"=> [
-                [
-                    "country"=> "55",
-                    "area"=> @substr($card->getPhone(), 0, 2),
-                    "number"=> @substr($card->getPhone(), 2, 9),
-                    "type"=> "MOBILE"
-                ]
-            ]
-        ];
+        return $this->getParameter('chavePix');
     }
 
-    protected function getItemsData()
+    public function setChavePix($value)
     {
-        $data = [];
-        $items = $this->getItems();
-        if ($items) {
-            $i = 1;
-            foreach ($items as $n => $item) {
-                $item_array = [];
-                $item_array['reference_id'] = $i;
-                $item_array['name'] = $item->getName();
-                $item_array['quantity'] = (int)$item->getQuantity();
-                $item_array['unit_amount'] = (int)round(($item->getPrice()*100.0), 0);
-
-                $data[] = $item_array;
-                ++$i;
-            }
-        }
-
-        return $data;
-    }
-
-    protected function getShippingData()
-    {
-        $card = $this->getCard();
-
-        return [
-            "address"=> [
-                "street"=> $card->getShippingAddress1(),
-                "number"=> $card->getShippingNumber(),
-                "complement"=> $card->getShippingAddress2(),
-                "locality"=> $card->getShippingDistrict(),
-                "city"=> $card->getShippingCity(),
-                "region_code"=>$card->getShippingState(),
-                "country"=> $card->getShippingCountry(),//BRA
-                "postal_code"=> $card->getShippingPostcode()
-            ]
-        ];
-    }
-
-    protected function getChargesData()
-    {
-        $card = $this->getCard();
-        return [[
-            "reference_id"=> $this->getOrderId(),
-            "description"=> "Compra em ".$this->getSoftDescriptor(),
-            "amount"=> [
-                "value"=> $this->getAmountInteger(),
-                "currency"=> $this->getCurrency()
-            ],
-            "payment_method"=> [
-                "type"=> "CREDIT_CARD",
-                "installments"=> $this->getInstallments(),
-                "capture"=> true, // quando capture=false só faz a análise de limite sem aprovação da transação
-                "soft_descriptor"=> $this->getSoftDescriptor(),
-                "card"=> [
-                    "number"=> $card->getNumber(),
-                    "exp_month"=> str_pad($card->getExpiryMonth(), 2, 0, STR_PAD_LEFT),
-                    "exp_year"=> $card->getExpiryYear(),
-                    "security_code"=> $card->getCvv(),
-                    "holder"=> [
-                        "name"=> $card->getName()
-                    ],
-                    "store"=> false
-                ]
-            ],
-            "notification_urls"=> [
-                $this->getNotifyUrl()
-            ]
-        ]];
+        $this->setParameter('chavePix', $value);
     }
 
     public function getDueDate()
@@ -343,5 +265,122 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
             return json_encode($data, $options | 64);
         }
         return str_replace('\\/', '/', json_encode($data, $options));
+    }
+
+    public function getDataCreditCard()
+    {
+        $this->validate('currency', 'order_id');
+        $card = $this->getCard();
+
+        $data = [
+            "reference_id"=> $this->getOrderId(),
+            "description"=> "Compra em ".$this->getSoftDescriptor(),
+            "amount"=> [
+                "value"=> $this->getAmountInteger(),
+                "currency"=> $this->getCurrency()
+            ],
+            "payment_method"=> [
+                "type"=> "CREDIT_CARD",
+                "installments"=> $this->getInstallments(),
+                "capture"=> false, // quando capture=false só faz a análise de limite sem aprovação da transação
+                "soft_descriptor"=> $this->getSoftDescriptor(),
+                "card"=> [
+                    "number"=> $card->getNumber(),
+                    "exp_month"=> str_pad($card->getExpiryMonth(), 2, 0, STR_PAD_LEFT),
+                    "exp_year"=> $card->getExpiryYear(),
+                    "security_code"=> $card->getCvv(),
+                    "holder"=> [
+                        "name"=> $card->getName()
+                    ]
+                ]
+            ],
+            "notification_urls" => [
+                $this->getNotifyUrl()
+            ]
+        ];
+
+        return $data;
+    }
+
+    //https://dev.pagseguro.uol.com.br/v1.0/reference/api-boleto-ambientes-disponiveis
+    public function getDataBoleto() // https://dev.pagseguro.uol.com.br/reference/charge-boleto
+    {
+        $customer = $this->getCustomer();
+
+        $data = [
+            "reference_id"=> $this->getOrderId(),
+            "description"=> "Compra em ".$this->getSoftDescriptor(),
+            "amount"=> [
+                "value"=> $this->getAmountInteger(),
+                "currency"=> $this->getCurrency()
+            ],
+            "payment_method"=> [
+                "type"=> "BOLETO",
+                "boleto"=> [
+                    "due_date"=> $this->getDueDate(),
+                    "instruction_lines"=> [
+                        "line_1"=> "Não receber após o vencimento.",
+                        "line_2"=> "Via PagSeguro"
+                    ],
+                    "holder"=> [
+                        "name"=> $customer->getName(),
+                        "tax_id"=> $customer->getDocumentNumber(),
+                        "email"=> $customer->getEmail(),
+                        "address"=> [
+                            "street"=> $customer->getBillingAddress1(),
+                            "number"=> $customer->getBillingNumber(),
+                            "locality"=> $customer->getBillingDistrict(),
+                            "city"=> $customer->getBillingCity(),
+                            "region"=> $customer->getBillingState(),//"Sao Paulo",
+                            "region_code"=> $customer->getBillingState(),//"SP"
+                            "country"=> "Brasil",
+                            "postal_code"=> $customer->getBillingPostcode()
+                        ]
+                      ]
+                ]
+            ],
+            "notification_urls" => [
+                $this->getNotifyUrl()
+            ]
+        ];
+
+
+
+        return $data;
+    }
+
+    // TODO: https://dev.pagseguro.uol.com.br/reference/pix-charge-pay-sandbox
+    public function getDataPix() // https://dev.pagseguro.uol.com.br/reference/pix-create-charge
+    {
+        $this->validate('chavePix');
+        $customer = $this->getCustomer();
+
+        $data = [
+            "txid"=> $this->getOrderId(),
+            "calendario"=> [
+                    "expiracao"=> "86400" // em segundos
+                ],
+            "devedor"=> [
+                    "cpf"=> $customer->getDocumentNumber(),
+                    "nome"=> $customer->getName()
+                ],
+            "valor"=> [
+                    "original"=> $this->getAmount()
+                ],
+            "chave"=> $this->getChavePix(), // O campo chave, determina a chave Pix registrada no DICT que será utilizada para endereçar a cobrança. Para fins de teste, em ambiente de Sandbox, qualquer chave é válida. A chave (CPF, CPNPJ, eMail, telefone, chave aleatória) pode ser cadastrada na área logada da sua conta PagSeguro, app ou web.
+            "solicitacaoPagador"=> "Compra em ".$this->getSoftDescriptor(),
+            "infoAdicionais"=> [
+                    /*[
+                        "nome"=> "Campo 1",
+                        "valor"=> "Informação Adicional1 do PSP-Recebedor"
+                    ],
+                    [
+                        "nome"=> "Campo 2",
+                        "valor"=> "Informação Adicional2 do PSP-Recebedor"
+                    ]*/
+                ]
+        ];
+
+        return $data;
     }
 }
