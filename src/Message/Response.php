@@ -43,6 +43,9 @@ class Response extends AbstractResponse
         if(isset($this->data['id']))
             return @$this->data['id'];
 
+        if(isset($this->data['txid']))
+            return @$this->data['txid'];
+
         return @$this->data['code'];
     }
 
@@ -50,6 +53,9 @@ class Response extends AbstractResponse
     {
         if(isset($this->data['id']))
             return @$this->data['id'];
+
+        if(isset($this->data['txid']))
+            return @$this->data['txid'];
 
         return @$this->data['code'];
     }
@@ -144,22 +150,25 @@ class Response extends AbstractResponse
     {
         $data = $this->getData();
         $pix = array();
-        $pix['pix_qrcodebase64image'] = $this->createQrCodeBase64Pix(@$data);
-        $pix['pix_qrcodestring'] = $this->createQrCodeStringPix(@$data);//@$data['location']
+        $pix['pix_qrcodebase64image'] = self::getBase64ImageFromUrl(@$data['urlImagemQrCode']);
+        $pix['pix_qrcodestring'] = @$data['pixCopiaECola'];//@$data['location']
         $pix['pix_valor'] = (@$data['valor']['original']*1.0);
-        $pix['pix_transaction_id'] = @$data['Payment']['PaymentId'];
+        $pix['pix_transaction_id'] = @$data['txid'];
 
         return $pix;
     }
 
-    public function createQrCodeBase64Pix($dados)
+    public function getBase64ImageFromUrl($url)
     {
-        return NULL;
-    }
+        $type = pathinfo($url, PATHINFO_EXTENSION);
+        if(strcmp($type, 'svg')==0)
+            $type = 'svg+xml';
+        $data = file_get_contents($url);
+        if (!$data)
+            return NULL;
 
-    public function createQrCodeStringPix($dados)
-    {
-        return NULL;
+        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+        return $base64;
     }
 
 }

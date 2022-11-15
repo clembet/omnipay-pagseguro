@@ -276,7 +276,7 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
             "reference_id"=> $this->getOrderId(),
             "description"=> "Compra em ".$this->getSoftDescriptor(),
             "amount"=> [
-                "value"=> $this->getAmountInteger(),
+                "value"=> (int)($this->getAmount()*100.0),
                 "currency"=> $this->getCurrency()
             ],
             "payment_method"=> [
@@ -311,7 +311,7 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
             "reference_id"=> $this->getOrderId(),
             "description"=> "Compra em ".$this->getSoftDescriptor(),
             "amount"=> [
-                "value"=> $this->getAmountInteger(),
+                "value"=> (int)($this->getAmount()*100.0),
                 "currency"=> $this->getCurrency()
             ],
             "payment_method"=> [
@@ -365,7 +365,7 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
                     "nome"=> $customer->getName()
                 ],
             "valor"=> [
-                    "original"=> $this->getAmount()
+                    "original"=> (int)($this->getAmount()*100.0)
                 ],
             "chave"=> $this->getChavePix(), // O campo chave, determina a chave Pix registrada no DICT que será utilizada para endereçar a cobrança. Para fins de teste, em ambiente de Sandbox, qualquer chave é válida. A chave (CPF, CPNPJ, eMail, telefone, chave aleatória) pode ser cadastrada na área logada da sua conta PagSeguro, app ou web.
             "solicitacaoPagador"=> "Compra em ".$this->getSoftDescriptor(),

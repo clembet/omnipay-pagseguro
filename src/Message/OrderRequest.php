@@ -25,7 +25,7 @@ class OrderRequest extends AbstractRequest
             "reference_id"=> $this->getOrderId(),
             "customer" => $this->getCustomerData(),
             "items"=> $this->getItemsData(),
-            //"qr_codes" => ["amount"=> ["value"=> $this->getAmountInteger()]],
+            //"qr_codes" => ["amount"=> ["value"=> (int)($this->getAmount()*100.0)]],
             "shipping" => $this->getShippingData(),
             "payment_method"=> [
                 "type"=> "CREDIT_CARD",
@@ -98,7 +98,7 @@ class OrderRequest extends AbstractRequest
             "reference_id"=> $this->getOrderId(),
             "description"=> "Compra em ".$this->getSoftDescriptor(),
             "amount"=> [
-                "value"=> $this->getAmountInteger(),
+                "value"=> (int)($this->getAmount()*100.0),
                 "currency"=> $this->getCurrency()
             ],
             "payment_method"=> [
