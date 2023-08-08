@@ -19,7 +19,7 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         $headers = [
             'Authorization' => $this->getToken(),
             'Content-Type' => 'application/json',
-            'x-idempotency-key'
+            //'x-idempotency-key'
         ];
 
         //print_r([$method, $url, $headers, json_encode($data)]);
